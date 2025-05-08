@@ -1,0 +1,55 @@
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load dataset (credit card fraud detection dataset)
+url = 'https://raw.githubusercontent.com/ucfilho/creditcard-fraud-detection/master/creditcard.csv'
+df = pd.read_csv(url)
+
+# Check the first few rows
+print("First few rows of the dataset:")
+print(df.head())
+
+# Check if there are any missing values
+print("\nMissing values in each column:")
+print(df.isnull().sum())
+
+# Normalize the features to a common scale (important for ML models)
+scaler = StandardScaler()
+df.iloc[:, :-1] = scaler.fit_transform(df.iloc[:, :-1])  # Normalize all columns except the target
+
+# Split dataset into features and labels
+X = df.drop(columns=['Class'])  # Features
+y = df['Class']  # Target: 1 is fraud, 0 is non-fraud
+
+# Split the data into training and testing sets
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+# Train a Random Forest Classifier
+rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+rf_model.fit(X_train, y_train)
+
+# Make predictions on the test set
+y_pred = rf_model.predict(X_test)
+
+# Evaluate the model
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Visualizing Confusion Matrix
+conf_matrix = confusion_matrix(y_test, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap='Blues', xticklabels=['Non-Fraud', 'Fraud'], yticklabels=['Non-Fraud', 'Fraud'])
+plt.title("Confusion Matrix")
+plt.xlabel('Predicted')
+plt.ylabel('Actual')
+plt.show()
